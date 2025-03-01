@@ -6,7 +6,7 @@ CXXFLAGS = -Wall -Wextra -std=c++17
 TARGET = operating_system_lab
 
 # Source files
-SRCS = main.cpp OperatingSystemLab.cpp util/logger.cpp
+SRCS = main.cpp src/OperatingSystemLab.cpp util/logger.cpp
 
 # Object files
 OBJS = $(SRCS:.cpp=.o)
