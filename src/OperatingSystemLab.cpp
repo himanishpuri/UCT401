@@ -133,3 +133,67 @@ void OperatingSystemLab::roundRobin(std::vector<Process> processes, int timeQuan
     }
     LOG_INFO("%s", gantt.c_str());
 }
+
+
+void OperatingSystemLab::shortestJobFirst(std::vector<Process> processes) {
+    int n = processes.size();
+    std::vector<int> completionTime(n, 0);
+    std::vector<int> waitingTime(n, 0);
+    std::vector<int> turnAroundTime(n, 0);
+    std::vector<int> ganttChart;
+
+    std::vector<bool> completed(n, false);
+    int currentTime = 0, completedProcesses = 0;
+
+    while (completedProcesses < n) {
+        int minBurstIndex = -1;
+        int minBurstTime = std::numeric_limits<int>::max();
+
+        for (int i = 0; i < n; i++) {
+            if (!completed[i] && processes[i].arrival <= currentTime) {
+                if (processes[i].burst < minBurstTime) {
+                    minBurstTime = processes[i].burst;
+                    minBurstIndex = i;
+                }
+            }
+        }
+
+        if (minBurstIndex == -1) {
+            currentTime++;
+            continue;
+        }
+
+        int pid = minBurstIndex;
+        ganttChart.push_back(processes[pid].pid);
+        currentTime += processes[pid].burst;
+        completionTime[pid] = currentTime;
+        turnAroundTime[pid] = completionTime[pid] - processes[pid].arrival;
+        waitingTime[pid] = turnAroundTime[pid] - processes[pid].burst;
+        completed[pid] = true;
+        completedProcesses++;
+    }
+
+    float totalWT = 0, totalTAT = 0;
+    LOG_INFO("PID\tBT\tAT\tCT\tTAT\tWT");
+
+    for (int i = 0; i < n; i++) {
+        totalWT += waitingTime[i];
+        totalTAT += turnAroundTime[i];
+
+        LOG_INFO("%d\t%d\t%d\t%d\t%d\t%d",
+                 processes[i].pid + 1,
+                 processes[i].burst,
+                 processes[i].arrival,
+                 completionTime[i],
+                 turnAroundTime[i],
+                 waitingTime[i]);
+    }
+
+    LOG_INFO("Average Turnaround Time: %.2f", totalTAT / n);
+    LOG_INFO("Average Waiting Time: %.2f", totalWT / n);
+
+    std::string gantt = "Gantt Chart: ";
+    for (const int& pid : ganttChart)
+        gantt += std::to_string(pid + 1) + " ";
+    LOG_INFO("%s", gantt.c_str());
+}
