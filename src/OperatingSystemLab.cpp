@@ -197,3 +197,53 @@ void OperatingSystemLab::shortestJobFirst(std::vector<Process> processes) {
         gantt += std::to_string(pid + 1) + " ";
     LOG_INFO("%s", gantt.c_str());
 }
+
+
+void OperatingSystemLab::firstComeFirstServe(std::vector<Process> processes) {
+    LOG_INFO("Starting First-Come, First-Serve (FCFS) scheduling...");
+
+    std::sort(processes.begin(), processes.end(), [](const Process& a, const Process& b) {
+        return (a.arrival == b.arrival) ? (a.pid < b.pid) : (a.arrival < b.arrival);
+              });
+
+    size_t n = processes.size();
+    std::vector<int> waitingTime(n, 0);
+    std::vector<int> turnaroundTime(n, 0);
+    int currentTime = 0;
+
+    LOG_INFO("Processes sorted based on arrival time.");
+
+    for (size_t i = 0; i < n; i++) {
+        if (currentTime < processes[i].arrival) {
+            LOG_WARN("CPU is idle from time %d to %d", currentTime, processes[i].arrival);
+            currentTime = processes[i].arrival;
+        }
+
+        waitingTime[i] = currentTime - processes[i].arrival;
+        turnaroundTime[i] = waitingTime[i] + processes[i].burst;
+        currentTime += processes[i].burst;
+
+        LOG_INFO("Process %d executed -> WT: %d, TAT: %d, CT: %d",
+                 processes[i].pid, waitingTime[i], turnaroundTime[i], currentTime);
+    }
+
+    float avgWT = 0, avgTAT = 0;
+    for (size_t i = 0; i < n; i++) {
+        avgWT += waitingTime[i];
+        avgTAT += turnaroundTime[i];
+    }
+
+    avgWT /= n;
+    avgTAT /= n;
+
+    LOG_INFO("Average Waiting Time: %.2f", avgWT);
+    LOG_INFO("Average Turnaround Time: %.2f", avgTAT);
+
+    std::string ganttChart = "Gantt Chart: ";
+    for (const auto& p : processes) {
+        ganttChart += "| P" + std::to_string(p.pid) + " ";
+    }
+    ganttChart += "|";
+
+    LOG_INFO("%s", ganttChart.c_str());
+}

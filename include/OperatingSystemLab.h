@@ -21,7 +21,7 @@ public:
                           const std::vector<std::vector<int>>& allocation);
     void roundRobin(std::vector<Process> processes, int timeQuantum);
     void shortestJobFirst(std::vector<Process> processes);
-
+    void firstComeFirstServe(std::vector<Process> processes);
 };
 
 #endif // OPERATING_SYSTEM_LAB_H
