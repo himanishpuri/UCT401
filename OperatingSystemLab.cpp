@@ -1,23 +1,24 @@
-#include <iostream>
-#include "util/logger.h"
+#include "OperatingSystemLab.h"
 
-using namespace std;
+OperatingSystemLab::OperatingSystemLab() {
+    LOG_INFO("Operating System Lab Initialized.");
+}
 
-const int P = 4; // Processes
-const int R = 3; // Resources
+bool OperatingSystemLab::bankersAlgorithm(int P, int R,
+                                          const std::vector<int>& processes,
+                                          const std::vector<int>& available,
+                                          const std::vector<std::vector<int>>& max,
+                                          const std::vector<std::vector<int>>& allocation) {
 
-bool isSafeState(int processes[], int available[], int max[][R], int allocation[][R]) {
-    int need[P][R];
+    std::vector<std::vector<int>> need(P, std::vector<int>(R));
 
     for (int i = 0; i < P; i++)
         for (int j = 0; j < R; j++)
             need[i][j] = max[i][j] - allocation[i][j];
 
-    bool finish[P] = { false };
-    int safeSequence[P];
-    int work[R];
-    for (int i = 0; i < R; i++)
-        work[i] = available[i];
+    std::vector<bool> finish(P, false);
+    std::vector<int> safeSequence(P);
+    std::vector<int> work = available;
 
     int count = 0;
     while (count < P) {
@@ -49,37 +50,9 @@ bool isSafeState(int processes[], int available[], int max[][R], int allocation[
 
     LOG_INFO("System is in a safe state.");
     std::string sequence = "Safe sequence: ";
-    for (int i = 0; i < P; i++) {
+    for (int i = 0; i < P; i++)
         sequence += std::to_string(safeSequence[i]) + " ";
-    }
     LOG_INFO("%s", sequence.c_str());
 
     return true;
-}
-
-int main() {
-    Logger::getInstance().setLogLevel(INFO);
-
-    int processes[P] = { 0, 1, 2, 3 };
-
-    int available[R] = { 0, 0, 1 };
-
-    int max[P][R] = {
-        {1, 1, 2},
-        {2, 1, 0},
-        {0, 1, 1},
-        {0, 3, 0}
-    };
-
-    int allocation[P][R] = {
-        {1, 0, 1},
-        {1, 1, 0},
-        {0, 1, 0},
-        {0, 1, 0}
-    };
-
-    LOG_INFO("Starting Banker's Algorithm execution...");
-    isSafeState(processes, available, max, allocation);
-
-    return 0;
 }
