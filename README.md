@@ -2,6 +2,12 @@
 
 Algorithms for my Operating System Course
 
+### Currently has the following algorithms
+1. FCFS
+2. Non Pre-Emptive SJF
+3. Round Robin
+4. Safety Algorithm (Banker Algorithm)
+
 ## How to Run
 
 To run the algorithms using CMake, follow these steps:
