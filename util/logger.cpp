@@ -4,8 +4,8 @@
 #include <filesystem>
 
 Logger::Logger() : currentLevel(DEBUG) {
-    std::filesystem::create_directories("logs");
-    logFile.open("logs/logs.txt", std::ios::app);
+    std::filesystem::create_directories("../logs");
+    logFile.open("../logs/logs.txt", std::ios::app);
     if (!logFile) {
         std::cerr << "Error: Could not open log file!" << std::endl;
     }
@@ -13,8 +13,8 @@ Logger::Logger() : currentLevel(DEBUG) {
 }
 
 Logger::Logger(LogLevel level) : currentLevel(level) {
-    std::filesystem::create_directories("logs");
-    logFile.open("logs/logs.txt", std::ios::app);
+    std::filesystem::create_directories("../logs");
+    logFile.open("../logs/logs.txt", std::ios::app);
     if (!logFile) {
         std::cerr << "Error: Could not open log file!" << std::endl;
     }

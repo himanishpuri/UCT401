@@ -4,7 +4,7 @@ Algorithms for my Operating System Course
 
 ## How to Run
 
-To run the algorithms, follow these steps:
+To run the algorithms using CMake, follow these steps:
 
 1. Clone the repository:
    ```bash
@@ -14,11 +14,34 @@ To run the algorithms, follow these steps:
    ```bash
    cd UCT401
    ```
-3. Compile the code:
+3. Create a build directory and navigate into it:
    ```bash
-   make
+   mkdir build
+   cd build
    ```
-4. Run the executable:
+4. Run CMake to configure the project:
+   ```bash
+   cmake ..
+   ```
+5. Compile the code:
+   ```bash
+   cmake --build .
+   ```
+6. Run the executable:
+
+   On Unix:
+
    ```bash
    ./operating_system_lab
+   ```
+
+   On Windows:
+
+   ```bash
+   operating_system_lab.exe
+   ```
+
+7. To clean up the build files:
+   ```bash
+   cmake --build . --target clean
    ```
