@@ -1,40 +1,52 @@
 name: C++ CI
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+   push:
+      branches:
+         - main
+   pull_request:
+      branches:
+         - main
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+   build:
+      runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      steps:
+         - name: Checkout repository
+           uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y cmake g++
+         - name: Install dependencies
+           run: sudo apt-get update && sudo apt-get install -y cmake g++
 
-      - name: Create build directory
-        run: mkdir -p build
+         - name: Create build directory
+           run: mkdir -p build
 
-      - name: Configure CMake
-        run: cmake -B build
+         - name: Configure CMake
+           run: cmake -B build
 
-      - name: Build project
-        run: cmake --build build
+         - name: Build project
+           run: cmake --build build
 
-      - name: Run executable (Unix)
-        run: ./build/operating_system_lab
-        if: runner.os != 'Windows'
+         - name: Run executable (Unix)
+           run: ./build/operating_system_lab
+           if: runner.os != 'Windows'
 
-      - name: Run executable (Windows)
-        run: build\\operating_system_lab.exe
-        if: runner.os == 'Windows'
+         - name: Run executable (Windows)
+           run: build\\operating_system_lab.exe
+           if: runner.os == 'Windows'
 
-      - name: Clean up build files
-        run: cmake --build build --target clean
+         - name: Upload to GitHub Release
+           uses: ncipollo/release-action@v1
+           with:
+              artifacts:
+              token: ${{ secrets.GITHUB_TOKEN }}
+              tag: v${{ github.run_number }}
+              name:
+              body: |
+                 Build for commit: ${{ github.sha }}
+                 Triggered by push to branch: ${{ github.ref_name }}
+                 Build timestamp: $TIMESTAMP
+
+         - name: Clean up build files
+           run: cmake --build build --target clean
