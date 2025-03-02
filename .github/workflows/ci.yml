@@ -8,6 +8,9 @@ on:
       branches:
          - main
 
+permissions:
+   contents: write # Allows writing releases
+
 jobs:
    build:
       runs-on: ubuntu-latest
@@ -39,14 +42,13 @@ jobs:
          - name: Upload to GitHub Release
            uses: ncipollo/release-action@v1
            with:
-              artifacts:
-              token: ${{ secrets.GITHUB_TOKEN }}
+              token: ${{ secrets.TOKEN }}
               tag: v${{ github.run_number }}
-              name:
               body: |
                  Build for commit: ${{ github.sha }}
                  Triggered by push to branch: ${{ github.ref_name }}
-                 Build timestamp: $TIMESTAMP
+              artifacts: build/operating_system_lab # Ensure an actual artifact is provided
+              generateReleaseNotes: true # (Optional) Automatically generate release notes
 
          - name: Clean up build files
            run: cmake --build build --target clean
