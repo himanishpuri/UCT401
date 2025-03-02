@@ -247,3 +247,62 @@ void OperatingSystemLab::firstComeFirstServe(std::vector<Process> processes) {
 
     LOG_INFO("%s", ganttChart.c_str());
 }
+
+void OperatingSystemLab::priorityScheduling(std::vector<PProcess> processes) {
+    LOG_INFO("Starting Priority Scheduling");
+
+    size_t n = processes.size();
+    size_t completed = 0;
+    std::vector<int> completionTime(n, 0);
+    std::vector<bool> done(n, false);
+    int curTime = 0;
+    std::vector<int> ganttChart;
+
+    std::sort(processes.begin(), processes.end(), [](const PProcess& a, const PProcess& b) {
+        if (a.arrival == b.arrival)
+            return a.priority < b.priority; // Lower number = higher priority
+        return a.arrival < b.arrival;
+              });
+
+    while (completed != n) {
+        int highestPriorityIndex = -1;
+        for (size_t i = 0; i < n; i++) {
+            if (!done[i] && processes[i].arrival <= curTime) {
+                if (highestPriorityIndex == -1 || processes[i].priority < processes[highestPriorityIndex].priority) {
+                    highestPriorityIndex = i;
+                }
+            }
+        }
+
+        if (highestPriorityIndex == -1) {
+            curTime++;
+            continue;
+        }
+
+        PProcess& p = processes[highestPriorityIndex];
+        ganttChart.push_back(p.pid);
+        curTime += p.burst;
+        completionTime[highestPriorityIndex] = curTime;
+        done[highestPriorityIndex] = true;
+        completed++;
+    }
+
+    LOG_INFO("PID\tBT\tAT\tCT\tTAT\tWT\tPriority");
+    float avgTAT = 0, avgWT = 0;
+    for (size_t i = 0; i < n; i++) {
+        int tat = completionTime[i] - processes[i].arrival;
+        int wt = tat - processes[i].burst;
+        avgTAT += tat;
+        avgWT += wt;
+        LOG_INFO("%d\t%d\t%d\t%d\t%d\t%d\t%d", processes[i].pid, processes[i].burst, processes[i].arrival, completionTime[i], tat, wt, processes[i].priority);
+    }
+    LOG_INFO("Average Turnaround Time: %.2f", avgTAT / n);
+    LOG_INFO("Average Waiting Time: %.2f", avgWT / n);
+
+    LOG_INFO("Gantt Chart:");
+    std::string gantt = "| ";
+    for (int pid : ganttChart) {
+        gantt += "P" + std::to_string(pid) + " | ";
+    }
+    LOG_INFO("%s", gantt.c_str());
+}

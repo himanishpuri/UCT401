@@ -11,6 +11,14 @@ struct Process {
     int burst;
 };
 
+struct PProcess
+{
+    int pid;
+    int arrival;
+    int burst;
+    int priority;
+};
+
 class OperatingSystemLab {
 public:
     OperatingSystemLab();
@@ -22,6 +30,8 @@ public:
     void roundRobin(std::vector<Process> processes, int timeQuantum);
     void shortestJobFirst(std::vector<Process> processes);
     void firstComeFirstServe(std::vector<Process> processes);
+    void priorityScheduling(std::vector<PProcess> processes);
+
 };
 
 #endif // OPERATING_SYSTEM_LAB_H
