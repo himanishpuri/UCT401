@@ -100,7 +100,7 @@ void OperatingSystemLab::roundRobin(std::vector<Process> processes, int timeQuan
             currentTime += remainingBurst[pid];
             remainingBurst[pid] = 0;
             completionTime[pid] = currentTime;
-            ganttChart.push_back(pid);
+            ganttChart.push_back(pid + 1);
             completed++;
         }
 
@@ -121,15 +121,16 @@ void OperatingSystemLab::roundRobin(std::vector<Process> processes, int timeQuan
         int wt = tat - processes[i].burst;
         totalTAT += tat;
         totalWT += wt;
-        LOG_INFO("%d\t%d\t%d\t%d\t%d\t%d", processes[i].pid + 1, processes[i].burst, processes[i].arrival, completionTime[i], tat, wt);
+        LOG_INFO("%d\t%d\t%d\t%d\t%d\t%d", processes[i].pid, processes[i].burst, processes[i].arrival, completionTime[i], tat, wt);
     }
 
     LOG_INFO("Average Turnaround Time: %.2f", totalTAT / processes.size());
     LOG_INFO("Average Waiting Time: %.2f", totalWT / processes.size());
 
     std::string gantt = "Gantt Chart: ";
+    reverse(ganttChart.begin(), ganttChart.end());
     for (const int& pid : ganttChart) {
-        gantt += std::to_string(pid + 1) + " ";
+        gantt += std::to_string(pid) + " ";
     }
     LOG_INFO("%s", gantt.c_str());
 }
@@ -193,6 +194,7 @@ void OperatingSystemLab::shortestJobFirst(std::vector<Process> processes) {
     LOG_INFO("Average Waiting Time: %.2f", totalWT / n);
 
     std::string gantt = "Gantt Chart: ";
+
     for (const int& pid : ganttChart)
         gantt += std::to_string(pid + 1) + " ";
     LOG_INFO("%s", gantt.c_str());
@@ -209,6 +211,8 @@ void OperatingSystemLab::firstComeFirstServe(std::vector<Process> processes) {
     size_t n = processes.size();
     std::vector<int> waitingTime(n, 0);
     std::vector<int> turnaroundTime(n, 0);
+    std::vector<int> completionTime(n, 0);
+
     int currentTime = 0;
 
     LOG_INFO("Processes sorted based on arrival time.");
@@ -222,15 +226,15 @@ void OperatingSystemLab::firstComeFirstServe(std::vector<Process> processes) {
         waitingTime[i] = currentTime - processes[i].arrival;
         turnaroundTime[i] = waitingTime[i] + processes[i].burst;
         currentTime += processes[i].burst;
-
-        LOG_INFO("Process %d executed -> WT: %d, TAT: %d, CT: %d",
-                 processes[i].pid, waitingTime[i], turnaroundTime[i], currentTime);
+        completionTime[i] = currentTime;
     }
 
     float avgWT = 0, avgTAT = 0;
+    LOG_INFO("PID\tWT\tTAT\tAT\tBT\tCT");
     for (size_t i = 0; i < n; i++) {
         avgWT += waitingTime[i];
         avgTAT += turnaroundTime[i];
+        LOG_INFO("%d\t%d\t%d\t%d\t%d\t%d", processes[i].pid, waitingTime[i], turnaroundTime[i], processes[i].arrival, processes[i].burst, completionTime[i]);
     }
 
     avgWT /= n;
@@ -239,11 +243,10 @@ void OperatingSystemLab::firstComeFirstServe(std::vector<Process> processes) {
     LOG_INFO("Average Waiting Time: %.2f", avgWT);
     LOG_INFO("Average Turnaround Time: %.2f", avgTAT);
 
-    std::string ganttChart = "Gantt Chart: ";
+    std::string ganttChart = "Gantt Chart: | ";
     for (const auto& p : processes) {
-        ganttChart += "| P" + std::to_string(p.pid) + " ";
+        ganttChart += std::to_string(p.pid) + " | ";
     }
-    ganttChart += "|";
 
     LOG_INFO("%s", ganttChart.c_str());
 }
