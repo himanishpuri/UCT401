@@ -306,3 +306,75 @@ void OperatingSystemLab::priorityScheduling(std::vector<PProcess> processes) {
     }
     LOG_INFO("%s", gantt.c_str());
 }
+
+void OperatingSystemLab::shortestRemainingTimeFirst(std::vector<Process> processes) {
+    LOG_INFO("Starting Shortest Remaining Time First (SRTF) Scheduling");
+
+    int n = processes.size();
+    std::vector<int> remainingTime(n);
+    std::transform(processes.begin(), processes.end(), remainingTime.begin(), [](const Process& pro) {
+        return pro.burst;
+                   });
+
+    std::vector<int> completionTime(n, 0);
+    std::vector<int> waitingTime(n, 0);
+    std::vector<int> turnAroundTime(n, 0);
+    std::vector<bool> completed(n, false);
+    int currentTime = 0;
+    int completedProcesses = 0;
+    std::vector<int> ganttChart;
+
+    while (completedProcesses < n) {
+        int minTime = std::numeric_limits<int>::max();
+        int minIndex = -1;
+
+        for (int i = 0; i < n; i++) {
+            if (!completed[i] && processes[i].arrival <= currentTime && remainingTime[i] < minTime) {
+                minTime = remainingTime[i];
+                minIndex = i;
+            }
+        }
+
+        if (minIndex == -1) {
+            currentTime++;
+            continue;
+        }
+
+        int pid = minIndex;
+        ganttChart.push_back(processes[pid].pid);
+        currentTime++;
+        remainingTime[pid]--;
+
+        if (remainingTime[pid] == 0) {
+            completed[pid] = true;
+            completedProcesses++;
+            completionTime[pid] = currentTime;
+            turnAroundTime[pid] = completionTime[pid] - processes[pid].arrival;
+            waitingTime[pid] = turnAroundTime[pid] - processes[pid].burst;
+        }
+    }
+
+    float totalWT = 0, totalTAT = 0;
+    LOG_INFO("PID\tBT\tAT\tCT\tTAT\tWT");
+
+    for (int i = 0; i < n; i++) {
+        totalWT += waitingTime[i];
+        totalTAT += turnAroundTime[i];
+        LOG_INFO("%d\t%d\t%d\t%d\t%d\t%d",
+                 processes[i].pid + 1,
+                 processes[i].burst,
+                 processes[i].arrival,
+                 completionTime[i],
+                 turnAroundTime[i],
+                 waitingTime[i]);
+    }
+
+    LOG_INFO("Average Turnaround Time: %.2f", totalTAT / n);
+    LOG_INFO("Average Waiting Time: %.2f", totalWT / n);
+
+    std::string gantt = "Gantt Chart: | ";
+    for (const int& pid : ganttChart) {
+        gantt += "P" + std::to_string(pid + 1) + " | ";
+    }
+    LOG_INFO("%s", gantt.c_str());
+}

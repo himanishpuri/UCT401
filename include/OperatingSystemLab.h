@@ -31,7 +31,7 @@ public:
     void shortestJobFirst(std::vector<Process> processes);
     void firstComeFirstServe(std::vector<Process> processes);
     void priorityScheduling(std::vector<PProcess> processes);
-
+    void shortestRemainingTimeFirst(std::vector<Process> processes);
 };
 
 #endif // OPERATING_SYSTEM_LAB_H
