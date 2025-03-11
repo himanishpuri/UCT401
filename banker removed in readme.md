@@ -6,9 +6,8 @@ Algorithms for my Operating System Course
 1. FCFS
 2. Non Pre-Emptive SJF
 3. Round Robin
-4. Safety Algorithm (Banker Algorithm)
-5. Non Pre-Emptive Priority Scheduling (Lower Number - Higher Priority)
-6. Shortest Remaining Time First (SRTF)
+4. Non Pre-Emptive Priority Scheduling (Lower Number - Higher Priority)
+5. Shortest Remaining Time First (SRTF)
 
 ## How to Run
 
