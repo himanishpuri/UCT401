@@ -90,36 +90,35 @@ void executeAlgorithm(const std::string& algorithm, OperatingSystemLab& os, std:
     }
 }
 
-void handleBankersAlgorithm(OperatingSystemLab& os) {
-    int num_processes = getIntInput("Enter the number of processes: ");
-    int num_resources = getIntInput("Enter the number of resources: ");
+// void handleBankersAlgorithm(OperatingSystemLab& os) {
+//     int num_processes = getIntInput("Enter the number of processes: ");
+//     int num_resources = getIntInput("Enter the number of resources: ");
+//     std::vector<int> available(num_resources);
+//     std::cout << "Enter available resources:\n";
+//     for (int i = 0; i < num_resources; ++i) {
+//         available[i] = getIntInput("  Resource " + std::to_string(i + 1) + ": ");
+//     }
 
-    std::vector<int> available(num_resources);
-    std::cout << "Enter available resources:\n";
-    for (int i = 0; i < num_resources; ++i) {
-        available[i] = getIntInput("  Resource " + std::to_string(i + 1) + ": ");
-    }
+//     std::vector<std::vector<int>> max(num_processes, std::vector<int>(num_resources));
+//     std::cout << "Enter the maximum matrix (each row corresponds to a process):\n";
+//     for (int i = 0; i < num_processes; ++i) {
+//         std::cout << "For Process " << i + 1 << ":\n";
+//         for (int j = 0; j < num_resources; ++j) {
+//             max[i][j] = getIntInput("  Resource " + std::to_string(j + 1) + ": ");
+//         }
+//     }
 
-    std::vector<std::vector<int>> max(num_processes, std::vector<int>(num_resources));
-    std::cout << "Enter the maximum matrix (each row corresponds to a process):\n";
-    for (int i = 0; i < num_processes; ++i) {
-        std::cout << "For Process " << i + 1 << ":\n";
-        for (int j = 0; j < num_resources; ++j) {
-            max[i][j] = getIntInput("  Resource " + std::to_string(j + 1) + ": ");
-        }
-    }
+//     std::vector<std::vector<int>> allocation(num_processes, std::vector<int>(num_resources));
+//     std::cout << "Enter the allocation matrix (each row corresponds to a process):\n";
+//     for (int i = 0; i < num_processes; ++i) {
+//         std::cout << "For Process " << i + 1 << ":\n";
+//         for (int j = 0; j < num_resources; ++j) {
+//             allocation[i][j] = getIntInput("  Resource " + std::to_string(j + 1) + ": ");
+//         }
+//     }
 
-    std::vector<std::vector<int>> allocation(num_processes, std::vector<int>(num_resources));
-    std::cout << "Enter the allocation matrix (each row corresponds to a process):\n";
-    for (int i = 0; i < num_processes; ++i) {
-        std::cout << "For Process " << i + 1 << ":\n";
-        for (int j = 0; j < num_resources; ++j) {
-            allocation[i][j] = getIntInput("  Resource " + std::to_string(j + 1) + ": ");
-        }
-    }
-
-    os.bankersAlgorithm(num_processes, num_resources, std::vector<int>(num_processes), available, max, allocation);
-}
+//     os.bankersAlgorithm(num_processes, num_resources, std::vector<int>(num_processes), available, max, allocation);
+// }
 
 int main(int argc, const char** argv) {
     if (argc < 3) {
@@ -137,15 +136,15 @@ int main(int argc, const char** argv) {
         getProcessDetails(processes, pProcesses, algorithm);
         executeAlgorithm(algorithm, os, processes, pProcesses);
     }
-    else if (std::string(argv[1]) == "--bankers") {
-        if (algorithm == "bankers-algorithm") {
-            handleBankersAlgorithm(os);
-        }
-        else {
-            LOG_ERROR("Invalid algorithm: %s", algorithm.c_str());
-            return 1;
-        }
-    }
+    // else if (std::string(argv[1]) == "--bankers") {
+    //     if (algorithm == "bankers-algorithm") {
+    //         handleBankersAlgorithm(os);
+    //     }
+    //     else {
+    //         LOG_ERROR("Invalid algorithm: %s", algorithm.c_str());
+    //         return 1;
+    //     }
+    // }
     else {
         std::cerr << "Invalid flag: " << argv[1] << "\n";
         return 1;

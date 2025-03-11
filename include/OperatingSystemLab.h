@@ -22,11 +22,11 @@ struct PProcess
 class OperatingSystemLab {
 public:
     OperatingSystemLab();
-    bool bankersAlgorithm(int P, int R,
-                          const std::vector<int>& processes,
-                          const std::vector<int>& available,
-                          const std::vector<std::vector<int>>& max,
-                          const std::vector<std::vector<int>>& allocation);
+    // bool bankersAlgorithm(int P, int R,
+    //                       const std::vector<int>& processes,
+    //                       const std::vector<int>& available,
+    //                       const std::vector<std::vector<int>>& max,
+    //                       const std::vector<std::vector<int>>& allocation);
     void roundRobin(std::vector<Process> processes, int timeQuantum);
     void shortestJobFirst(std::vector<Process> processes);
     void firstComeFirstServe(std::vector<Process> processes);
