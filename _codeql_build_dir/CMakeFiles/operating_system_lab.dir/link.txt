@@ -1,0 +1,1 @@
+/home/runner/work/UCT401/.codeql-scratch/dbs/cpp/working/autobuild/bin/c++  -Wall -Wextra -O3 -DNDEBUG -Wl,--dependency-file=CMakeFiles/operating_system_lab.dir/link.d CMakeFiles/operating_system_lab.dir/main.cpp.o CMakeFiles/operating_system_lab.dir/src/OperatingSystemLab.cpp.o CMakeFiles/operating_system_lab.dir/util/logger.cpp.o -o operating_system_lab

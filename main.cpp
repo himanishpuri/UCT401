@@ -24,7 +24,7 @@ void displayUsageError() {
     LOG_ERROR("Usage: <flag> <ALGORITHM>");
 }
 
-void getProcessDetails(std::vector<Process>& processes, std::vector<PProcess>& pProcesses, const std::string& algorithm) {
+void getProcessDetails(std::vector<Process>& processes, std::vector<PProcess>& pProcesses, std::vector<MLQProcess>& mlqProcesses, const std::string& algorithm) {
     int num_processes = getIntInput("Enter the number of processes: ");
     std::unordered_set<int> process_ids;
 
@@ -45,20 +45,28 @@ void getProcessDetails(std::vector<Process>& processes, std::vector<PProcess>& p
         if (algorithm == "PR") {
             int priority = getIntInput("  Priority: ");
             pProcesses.push_back({ id, arrival_time, burst_time, priority });
-        }
-        else {
+        } else if (algorithm == "MLQ") {
+            int queue_level = getIntInput("  Queue Level (0=System/FCFS, 1=Interactive/RR, 2=Batch/FCFS): ");
+            while (queue_level < 0 || queue_level > 2) {
+                std::cerr << "Invalid queue level. Please enter 0, 1, or 2.\n";
+                queue_level = getIntInput("  Queue Level (0=System/FCFS, 1=Interactive/RR, 2=Batch/FCFS): ");
+            }
+            mlqProcesses.push_back({ id, arrival_time, burst_time, queue_level });
+        } else {
             processes.push_back({ id, arrival_time, burst_time });
         }
     }
 }
 
-void executeAlgorithm(const std::string& algorithm, OperatingSystemLab& os, std::vector<Process> processes = {}, std::vector<PProcess> pProcesses = {}) {
+void executeAlgorithm(const std::string& algorithm, OperatingSystemLab& os, std::vector<Process> processes = {}, std::vector<PProcess> pProcesses = {}, std::vector<MLQProcess> mlqProcesses = {}) {
     std::unordered_map<std::string, int> algo_map = {
         {"RR", 1},
         {"SJF", 2},
         {"FCFS", 3},
         {"PR", 4},
-        {"SRTF", 5}
+        {"SRTF", 5},
+        {"MLQ", 6},
+        {"MLFQ", 7}
     };
 
     switch (algo_map[algorithm]) {
@@ -83,6 +91,19 @@ void executeAlgorithm(const std::string& algorithm, OperatingSystemLab& os, std:
         break;
     case 5:
         os.shortestRemainingTimeFirst(processes);
+        break;
+    case 6:
+    {
+        if (mlqProcesses.empty()) {
+            std::cerr << "Multilevel Queue Scheduling requires processes with queue level assignments.\n";
+            return;
+        }
+        int time_quantum = getIntInput("Enter the time quantum for the Interactive queue (Round Robin): ");
+        os.multilevelQueue(mlqProcesses, time_quantum);
+    }
+    break;
+    case 7:
+        os.multilevelFeedbackQueue(processes);
         break;
     default:
         LOG_ERROR("Invalid algorithm: %s", algorithm.c_str());
@@ -132,9 +153,10 @@ int main(int argc, const char** argv) {
     if (std::string(argv[1]) == "--schedule") {
         std::vector<Process> processes;
         std::vector<PProcess> pProcesses;
+        std::vector<MLQProcess> mlqProcesses;
 
-        getProcessDetails(processes, pProcesses, algorithm);
-        executeAlgorithm(algorithm, os, processes, pProcesses);
+        getProcessDetails(processes, pProcesses, mlqProcesses, algorithm);
+        executeAlgorithm(algorithm, os, processes, pProcesses, mlqProcesses);
     }
     // else if (std::string(argv[1]) == "--bankers") {
     //     if (algorithm == "bankers-algorithm") {

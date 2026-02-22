@@ -1,0 +1,4 @@
+/home/runner/work/UCT401/UCT401/_codeql_build_dir/CMakeFiles/operating_system_lab.dir
+/home/runner/work/UCT401/UCT401/_codeql_build_dir/CMakeFiles/clean_objs.dir
+/home/runner/work/UCT401/UCT401/_codeql_build_dir/CMakeFiles/edit_cache.dir
+/home/runner/work/UCT401/UCT401/_codeql_build_dir/CMakeFiles/rebuild_cache.dir

@@ -19,6 +19,14 @@ struct PProcess
     int priority;
 };
 
+struct MLQProcess
+{
+    int pid;
+    int arrival;
+    int burst;
+    int queue_level; // 0=System (FCFS), 1=Interactive (RR), 2=Batch (FCFS)
+};
+
 class OperatingSystemLab {
 public:
     OperatingSystemLab();
@@ -32,6 +40,8 @@ public:
     void firstComeFirstServe(std::vector<Process> processes);
     void priorityScheduling(std::vector<PProcess> processes);
     void shortestRemainingTimeFirst(std::vector<Process> processes);
+    void multilevelQueue(std::vector<MLQProcess> processes, int timeQuantum);
+    void multilevelFeedbackQueue(std::vector<Process> processes);
 };
 
 #endif // OPERATING_SYSTEM_LAB_H
