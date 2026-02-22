@@ -1,6 +1,7 @@
 #include "../include/OperatingSystemLab.h"
 #include <iostream>
 #include <algorithm>
+#include <deque>
 
 OperatingSystemLab::OperatingSystemLab() {
     LOG_INFO("Operating System Lab Initialized.");
@@ -380,6 +381,232 @@ void OperatingSystemLab::shortestRemainingTimeFirst(std::vector<Process> process
     std::string gantt = "Gantt Chart: | ";
     for (const int& pid : ganttChart) {
         gantt += "P" + std::to_string(pid + 1) + " | ";
+    }
+    LOG_INFO("%s", gantt.c_str());
+}
+
+void OperatingSystemLab::multilevelQueue(std::vector<MLQProcess> processes, int timeQuantum) {
+    LOG_INFO("Starting Multilevel Queue (MLQ) Scheduling");
+    LOG_INFO("Queue 0: System (FCFS), Queue 1: Interactive (RR, quantum=%d), Queue 2: Batch (FCFS)", timeQuantum);
+
+    int n = processes.size();
+
+    std::sort(processes.begin(), processes.end(), [](const MLQProcess& a, const MLQProcess& b) {
+        return (a.arrival == b.arrival) ? (a.pid < b.pid) : (a.arrival < b.arrival);
+              });
+
+    std::vector<int> remainingBurst(n);
+    std::vector<int> completionTime(n, 0);
+    std::vector<bool> completed(n, false);
+    std::vector<bool> hasArrived(n, false);
+    std::vector<int> ganttChart;
+
+    for (int i = 0; i < n; i++) remainingBurst[i] = processes[i].burst;
+
+    // Three ready queues: System (FCFS), Interactive (RR), Batch (FCFS)
+    std::queue<int> q0, q1, q2;
+
+    int currentTime = 0;
+    int completedCount = 0;
+    int nextToArrive = 0;
+
+    auto enqueueArrivals = [&]() {
+        while (nextToArrive < n && processes[nextToArrive].arrival <= currentTime) {
+            int idx = nextToArrive++;
+            hasArrived[idx] = true;
+            if (processes[idx].queue_level == 0) q0.push(idx);
+            else if (processes[idx].queue_level == 1) q1.push(idx);
+            else q2.push(idx);
+        }
+    };
+
+    while (completedCount < n) {
+        enqueueArrivals();
+
+        if (!q0.empty()) {
+            // Queue 0: FCFS – run selected process to completion
+            int idx = q0.front(); q0.pop();
+            ganttChart.push_back(processes[idx].pid);
+            currentTime += remainingBurst[idx];
+            completionTime[idx] = currentTime;
+            completed[idx] = true;
+            completedCount++;
+            enqueueArrivals();
+        } else if (!q1.empty()) {
+            // Queue 1: Round Robin
+            int idx = q1.front(); q1.pop();
+            int slice = std::min(remainingBurst[idx], timeQuantum);
+            ganttChart.push_back(processes[idx].pid);
+            currentTime += slice;
+            remainingBurst[idx] -= slice;
+            enqueueArrivals();
+            if (remainingBurst[idx] == 0) {
+                completionTime[idx] = currentTime;
+                completed[idx] = true;
+                completedCount++;
+            } else {
+                q1.push(idx);
+            }
+        } else if (!q2.empty()) {
+            // Queue 2: FCFS – run selected process to completion
+            int idx = q2.front(); q2.pop();
+            ganttChart.push_back(processes[idx].pid);
+            currentTime += remainingBurst[idx];
+            completionTime[idx] = currentTime;
+            completed[idx] = true;
+            completedCount++;
+            enqueueArrivals();
+        } else {
+            // CPU idle – jump to next arrival
+            if (nextToArrive < n) currentTime = processes[nextToArrive].arrival;
+            else break;
+        }
+    }
+
+    float totalTAT = 0, totalWT = 0;
+    LOG_INFO("PID\tBT\tAT\tCT\tTAT\tWT\tQueue");
+    for (int i = 0; i < n; i++) {
+        int tat = completionTime[i] - processes[i].arrival;
+        int wt = tat - processes[i].burst;
+        totalTAT += tat;
+        totalWT += wt;
+        LOG_INFO("%d\t%d\t%d\t%d\t%d\t%d\t%d",
+                 processes[i].pid, processes[i].burst, processes[i].arrival,
+                 completionTime[i], tat, wt, processes[i].queue_level);
+    }
+    LOG_INFO("Average Turnaround Time: %.2f", totalTAT / n);
+    LOG_INFO("Average Waiting Time: %.2f", totalWT / n);
+
+    std::string gantt = "Gantt Chart: | ";
+    for (int pid : ganttChart) {
+        gantt += "P" + std::to_string(pid) + " | ";
+    }
+    LOG_INFO("%s", gantt.c_str());
+}
+
+void OperatingSystemLab::multilevelFeedbackQueue(std::vector<Process> processes) {
+    LOG_INFO("Starting Multilevel Feedback Queue (MLFQ) Scheduling");
+    LOG_INFO("Q0: RR quantum=2 | Q1: RR quantum=4 | Q2: FCFS");
+    LOG_INFO("Demotion on quantum exhaustion; Aging threshold: 10 time units");
+
+    int n = processes.size();
+    const int NUM_QUEUES = 3;
+    const int quantums[NUM_QUEUES] = {2, 4, 0}; // 0 = FCFS (run to completion)
+    const int AGING_THRESHOLD = 10;
+
+    std::sort(processes.begin(), processes.end(), [](const Process& a, const Process& b) {
+        return (a.arrival == b.arrival) ? (a.pid < b.pid) : (a.arrival < b.arrival);
+              });
+
+    std::vector<int> remainingBurst(n);
+    std::vector<int> completionTime(n, 0);
+    std::vector<bool> completed(n, false);
+    std::vector<int> queueLevel(n, 0);
+    std::vector<int> queueEntryTime(n, 0);
+    std::vector<int> ganttChart;
+
+    for (int i = 0; i < n; i++) remainingBurst[i] = processes[i].burst;
+
+    std::deque<int> queues[NUM_QUEUES];
+
+    int currentTime = 0;
+    int completedCount = 0;
+    int nextToArrive = 0;
+
+    auto enqueueArrivals = [&]() {
+        while (nextToArrive < n && processes[nextToArrive].arrival <= currentTime) {
+            int idx = nextToArrive++;
+            queueLevel[idx] = 0;
+            queueEntryTime[idx] = currentTime;
+            queues[0].push_back(idx);
+        }
+    };
+
+    auto checkAging = [&]() {
+        for (int ql = 1; ql < NUM_QUEUES; ql++) {
+            std::deque<int> remaining;
+            for (int idx : queues[ql]) {
+                if (currentTime - queueEntryTime[idx] >= AGING_THRESHOLD) {
+                    int newLevel = ql - 1;
+                    LOG_INFO("Process %d promoted from Q%d to Q%d (aging)", processes[idx].pid, ql, newLevel);
+                    queueLevel[idx] = newLevel;
+                    queueEntryTime[idx] = currentTime;
+                    queues[newLevel].push_back(idx);
+                } else {
+                    remaining.push_back(idx);
+                }
+            }
+            queues[ql] = remaining;
+        }
+    };
+
+    while (completedCount < n) {
+        enqueueArrivals();
+        checkAging();
+
+        // Find highest-priority non-empty queue
+        int selectedQueue = -1;
+        for (int ql = 0; ql < NUM_QUEUES; ql++) {
+            if (!queues[ql].empty()) {
+                selectedQueue = ql;
+                break;
+            }
+        }
+
+        if (selectedQueue == -1) {
+            if (nextToArrive < n) currentTime = processes[nextToArrive].arrival;
+            else break;
+            continue;
+        }
+
+        int idx = queues[selectedQueue].front();
+        queues[selectedQueue].pop_front();
+
+        int quantum = quantums[selectedQueue];
+        int slice = (quantum == 0) ? remainingBurst[idx] : std::min(remainingBurst[idx], quantum);
+
+        ganttChart.push_back(processes[idx].pid);
+        currentTime += slice;
+        remainingBurst[idx] -= slice;
+
+        enqueueArrivals();
+
+        if (remainingBurst[idx] == 0) {
+            completionTime[idx] = currentTime;
+            completed[idx] = true;
+            completedCount++;
+        } else {
+            // Demote if the process used its full quantum (only for time-sliced queues)
+            bool usedFullQuantum = (quantum > 0) && (slice == quantum);
+            int newLevel = (usedFullQuantum && selectedQueue < NUM_QUEUES - 1)
+                           ? selectedQueue + 1
+                           : selectedQueue;
+            if (newLevel != selectedQueue) {
+                LOG_INFO("Process %d demoted from Q%d to Q%d", processes[idx].pid, selectedQueue, newLevel);
+            }
+            queueLevel[idx] = newLevel;
+            queueEntryTime[idx] = currentTime;
+            queues[newLevel].push_back(idx);
+        }
+    }
+
+    float totalTAT = 0, totalWT = 0;
+    LOG_INFO("PID\tBT\tAT\tCT\tTAT\tWT");
+    for (int i = 0; i < n; i++) {
+        int tat = completionTime[i] - processes[i].arrival;
+        int wt = tat - processes[i].burst;
+        totalTAT += tat;
+        totalWT += wt;
+        LOG_INFO("%d\t%d\t%d\t%d\t%d\t%d",
+                 processes[i].pid, processes[i].burst, processes[i].arrival,
+                 completionTime[i], tat, wt);
+    }
+    LOG_INFO("Average Turnaround Time: %.2f", totalTAT / n);
+    LOG_INFO("Average Waiting Time: %.2f", totalWT / n);
+
+    std::string gantt = "Gantt Chart: | ";
+    for (int pid : ganttChart) {
+        gantt += "P" + std::to_string(pid) + " | ";
     }
     LOG_INFO("%s", gantt.c_str());
 }
